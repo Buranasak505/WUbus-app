@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <title>ค้นหาป้ายรถมินิบัส ม.วลัยลักษณ์</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;600&display=swap');
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      margin: 0;
+      min-height: 100vh;
+      background: #f8f9fa; /* แก้สีพื้นหลังเป็นโทนสว่างมินิมอล */
+      color: #333333; /* แก้สีตัวอักษรเป็นสีเข้ม */
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 20px;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* ปุ่มเปิดแผนที่มุมขวาบน */
+    #mapBtn {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: #333333; /* เปลี่ยนเป็นสีเข้มมินิมอล */
+      border: none;
+      border-radius: 30px;
+      padding: 12px 25px;
+      font-weight: 700;
+      font-size: 1rem;
+      color: white;
+      cursor: pointer;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1); /* ปรับเงาให้อ่อนลง */
+      z-index: 10;
+      transition: background 0.3s ease;
+    }
+    #mapBtn:hover {
+      background: #555555; /* เปลี่ยนสีตอนชี้เมาส์ */
+    }
+
+    h1 {
+      margin: 0 0 15px;
+      font-size: 3rem;
+      font-weight: 700;
+      text-align: center;
+      color: #222222; /* เปลี่ยนสีหัวข้อเป็นสีดำเข้ม */
+      text-shadow: 0 2px 4px rgba(0,0,0,0.05); /* ปรับเงาหัวข้อให้อ่อนลง */
+    }
+
+    /* Search box container */
+    .search-container {
+      background: white;
+      padding: 15px 20px;
+      border-radius: 40px;
+      max-width: 600px;
+      display: flex;
+      align-items: center;
+      box-shadow: 0 6px 15px rgba(0,0,0,0.05); /* ปรับเงากล่องค้นหา */
+      width: 100%;
+      max-width: 600px;
+    }
+    input[type="search"] {
+      flex: 1;
+      border: none;
+      outline: none;
+      font-size: 1.25rem;
+      border-radius: 40px;
+      padding: 12px 20px;
+      color: #333;
+      font-weight: 500;
+    }
+    input[type="search"]::placeholder {
+      color: #bbb;
+      font-style: italic;
+    }
+    button.search-btn {
+      background: #333333; /* เปลี่ยนเป็นสีเข้มมินิมอล */
+      border: none;
+      padding: 12px 25px;
+      margin-left: 15px;
+      border-radius: 40px;
+      color: white;
+      font-weight: 700;
+      cursor: pointer;
+      font-size: 1.1rem;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1); /* ปรับเงาให้อ่อนลง */
+      transition: background 0.3s ease;
+    }
+    button.search-btn:hover {
+      background: #555555; /* เปลี่ยนสีตอนชี้เมาส์ */
+    }
+
+    #suggestions {
+      margin-top: 8px;
+      border-radius: 0 0 12px 12px;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.08); /* ปรับเงาให้อ่อนลง */
+      background: white;
+      max-height: 220px;
+      overflow-y: auto;
+      color: #333;
+      font-weight: 600;
+    }
+    #suggestions div {
+      padding: 12px 20px;
+      cursor: pointer;
+      border-bottom: 1px solid #eee; /* ปรับสีเส้นคั่นให้อ่อนลง */
+    }
+    #suggestions div:hover {
+      background-color: #f0f0f0; /* เปลี่ยนสีพื้นหลังตอนชี้เมาส์ให้เป็นสีเทาอ่อน */
+      color: #111111; /* เปลี่ยนสีตัวอักษรเป็นสีดำ */
+    }
+
+    .result {
+      margin-top: 30px;
+      background: white;
+      border-radius: 15px;
+      padding: 25px;
+      color: #333;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.05); /* ปรับเงาให้อ่อนลง */
+      font-size: 1.2rem;
+      font-weight: 600;
+    }
+    .result h2 {
+      font-size: 2rem;
+      margin-top: 0;
+      color: #222222; /* เปลี่ยนสีหัวข้อผลลัพธ์เป็นสีดำ */
+      font-weight: 800;
+    }
+  </style>
+</head>
+<body>
+
+  <button id="mapBtn" onclick="goToMap()" aria-label="เปิดแผนที่">
+    เปิดแผนที่
+  </button>
+
+  <h1>ค้นหาป้ายรถมินิบัส ม.วลัยลักษณ์</h1>
+
+  <div class="search-container">
+    <input type="search" id="searchInput" placeholder="พิมพ์ชื่อป้าย เช่น st, residence, อาคาร" autocomplete="off" />
+    <button class="search-btn" onclick="searchStop()">ค้นหา</button>
+  </div>
+
+  <div id="suggestions"></div>
+  <div id="resultArea" class="result" style="display:none;"></div>
+
+  <script>
+    const routes = [
+      {
+        route_id: "route1",
+        route_name: "สาย 1 - วิทยาเขตหลัก",
+        scheduleStart: "07:00",
+        intervalMin: 15,
+        stops: [
+          { id: 1, name: "หอพัก Residence", lat: 8.648039, lng: 99.888178, timeToNext: 3 },
+          { id: 2, name: "หอพักลักษณานิเวศ 18", lat: 8.648026, lng: 99.889342, timeToNext: 3 },
+          { id: 3, name: "หอพักลักษณานิเวศ 5", lat: 8.647565, lng: 99.892116, timeToNext: 3 },
+          { id: 4, name: "อาคารกิจกรรม", lat: 8.647447, lng: 99.893631, timeToNext: 3 },
+          { id: 5, name: "ศูนย์รวมรถ", lat: 8.646326, lng: 99.893985, timeToNext: 3 },
+          { id: 6, name: "อาคารสถาปัตยกรรม", lat: 8.644931, lng: 99.894366, timeToNext: 3 },
+          { id: 7, name: "อาคารเรียนรวม 3", lat: 8.644913, lng: 99.89542, timeToNext: 3 },
+          { id: 8, name: "อาคารไทยบุรี", lat: 8.64574, lng: 99.897491, timeToNext: 3 },
+          { id: 9, name: "อาคาร ST", lat: 8.644589, lng: 99.899819, timeToNext: 3 },
+          { id: 10, name: "อาคารบริหาร", lat: 8.641568, lng: 99.90186, timeToNext: 3 },
+          { id: 11, name: "โรงพยาบาลสัตว์ใหญ่", lat: 8.643369, lng: 99.913616, timeToNext: 3 },
+          { id: 12, name: "อาคารวิชาการ 5", lat: 8.638183, lng: 99.895565, timeToNext: 3 },
+          { id: 13, name: "ครัวโปรเชฟ", lat: 8.639222, lng: 99.894299, timeToNext: 4 },
+          { id: 14, name: "อาคารกายวิภาค", lat: 8.642834, lng: 99.893162, timeToNext: 3 },
+          { id: 15, name: "อาคารสถาปัตยกรรม (กลับ)", lat: 8.644931, lng: 99.894366, timeToNext: 3 },
+          { id: 16, name: "ศูนย์รวมรถ (กลับ)", lat: 8.646326, lng: 99.893985, timeToNext: 3 },
+          { id: 17, name: "อาคารกิจกรรม (กลับ)", lat: 8.647447, lng: 99.893631, timeToNext: 3 },
+          { id: 18, name: "หอพักลักษณานิเวศ 5 (กลับ)", lat: 8.647565, lng: 99.892116, timeToNext: 3 },
+          { id: 19, name: "หอพัก Residence (กลับ)", lat: 8.648039, lng: 99.888178, timeToNext: 0 }
+        ]
+      },
+      {
+        route_id: "route2",
+        route_name: "สาย 2 - หอพัก-สนามกีฬาตุมปัง",
+        scheduleStart: "07:05",
+        intervalMin: 10,
+        stops: [
+          { id: 1, name: "ป้ายตรงข้ามอาคารกิจกรรม", lat: 8.647437, lng: 99.893602, timeToNext: 3 },
+          { id: 2, name: "หอพักลักษณานิเวศ 5", lat: 8.647565, lng: 99.892116, timeToNext: 3 },
+          { id: 3, name: "หอพัก Residence", lat: 8.648039, lng: 99.888178, timeToNext: 4 },
+          { id: 4, name: "หอพักลักษณานิเวศ 18", lat: 8.648026, lng: 99.889342, timeToNext: 2 },
+          { id: 5, name: "ผ่านทางออกประตู 2", lat: 8.646997, lng: 99.890262, timeToNext: 3 },
+          { id: 6, name: "สนามแบดมินตัน", lat: 8.646997, lng: 99.890262, timeToNext: 3 },
+          { id: 7, name: "อาคารพลศึกษา", lat: 8.649192, lng: 99.881497, timeToNext: 2 },
+          { id: 8, name: "สระว่ายน้ำ", lat: 8.649192, lng: 99.881497, timeToNext: 2 },
+          { id: 9, name: "สนามเทนนิส", lat: 8.649412, lng: 99.880180, timeToNext: 2 },
+          { id: 10, name: "สนามกีฬาตุมปัง", lat: 8.649701, lng: 99.879673, timeToNext: 0 },
+          { id: 11, name: "สนามเทนนิส (กลับ)", lat: 8.649412, lng: 99.880180, timeToNext: 1 },
+          { id: 12, name: "สระว่ายน้ำ (กลับ)", lat: 8.649192, lng: 99.881497, timeToNext: 1 },
+          { id: 13, name: "อาคารพลศึกษา (กลับ)", lat: 8.649192, lng: 99.881497, timeToNext: 3 },
+          { id: 14, name: "สนามแบดมินตัน (กลับ)", lat: 8.646997, lng: 99.890262, timeToNext: 2 },
+          { id: 15, name: "ผ่านทางออกประตู 2 (กลับ)", lat: 8.646997, lng: 99.890262, timeToNext: 2 },
+          { id: 16, name: "หอพักลักษณานิเวศ 18 (กลับ)", lat: 8.648026, lng: 99.889342, timeToNext: 3 },
+          { id: 17, name: "หอพัก Residence (กลับ)", lat: 8.648039, lng: 99.888178, timeToNext: 2 },
+          { id: 18, name: "หอพักลักษณานิเวศ 5 (กลับ)", lat: 8.647565, lng: 99.892116, timeToNext: 2 },
+          { id: 19, name: "ป้ายตรงข้ามอาคารกิจกรรม (กลับ)", lat: 8.647437, lng: 99.893602, timeToNext: 0 }
+        ]
+      },
+      {
+        route_id: "route3",
+        route_name: "สาย 3 - หอพัก-หน้ามหาวิทยาลัย",
+        scheduleStart: "07:10",
+        intervalMin: 12,
+        stops: [
+          { id: 1, name: "แยกลักษณานิเวศ 14", lat: 8.648922, lng: 99.896568, timeToNext: 3 },
+          { id: 2, name: "อาคารกิจกรรม", lat: 8.647447, lng: 99.893631, timeToNext: 3 },
+          { id: 3, name: "ศูนย์รวมรถ", lat: 8.646326, lng: 99.893985, timeToNext: 2 },
+          { id: 4, name: "อาคารสถาปัตยกรรม", lat: 8.644931, lng: 99.894366, timeToNext: 3 },
+          { id: 5, name: "อาคารเรียนรวม 3", lat: 8.644913, lng: 99.89542, timeToNext: 3 },
+          { id: 6, name: "อาคารไทยบุรี", lat: 8.64574, lng: 99.897491, timeToNext: 2 },
+          { id: 7, name: "อาคาร ST", lat: 8.644589, lng: 99.899819, timeToNext: 3 },
+          { id: 8, name: "อาคารบริหาร", lat: 8.641568, lng: 99.90186, timeToNext: 3 },
+          { id: 9, name: "สวนวลัยลักษณ์ 1", lat: 8.647822, lng: 99.901608, timeToNext: 2 },
+          { id: 10, name: "สวนวลัยลักษณ์ 2", lat: 8.649014, lng: 99.906032, timeToNext: 3 },
+          { id: 11, name: "7-Eleven คุ้มสวัสดิ์", lat: 8.651574, lng: 99.917913, timeToNext: 3 },
+          { id: 12, name: "โลตัสท่าศาลา", lat: 8.662143, lng: 99.92368, timeToNext: 3 },
+          { id: 13, name: "ศาลารอรถทางเข้ามหาวิทยาลัย", lat: 8.660496, lng: 99.923339, timeToNext: 3 },
+          { id: 14, name: "7-Eleven (ขาเข้า)", lat: 8.654814, lng: 99.920638, timeToNext: 3 },
+          { id: 15, name: "ศูนย์การแพทย์ มวล", lat: 8.6418, lng: 99.913428, timeToNext: 3 },
+          { id: 16, name: "อาคาร ดร.วิจิตร ศรีสะอ้าน", lat: 8.644173, lng: 99.900353, timeToNext: 3 }
+        ]
+      }
+    ];
+
+    const input = document.getElementById('searchInput');
+    const suggestions = document.getElementById('suggestions');
+    const resultArea = document.getElementById('resultArea');
+
+    // สร้าง list ป้ายทั้งหมดจาก routes
+    const allStops = [];
+    routes.forEach(route => {
+      route.stops.forEach(stop => {
+        allStops.push({
+          stopName: stop.name.toLowerCase(),
+          routeName: route.route_name,
+          scheduleStart: route.scheduleStart,
+          intervalMin: route.intervalMin,
+          timeToNext: stop.timeToNext
+        });
+      });
+    });
+
+    input.addEventListener('input', () => {
+      showSuggestions(input.value);
+    });
+
+    function showSuggestions(value) {
+      const val = value.trim().toLowerCase();
+      suggestions.innerHTML = '';
+      if (!val) return;
+      const filtered = allStops.filter(stop => stop.stopName.includes(val)).slice(0, 10);
+      filtered.forEach(stop => {
+        const div = document.createElement('div');
+        div.textContent = stop.stopName;
+        div.addEventListener('click', () => {
+          input.value = stop.stopName;
+          suggestions.innerHTML = '';
+          showResult(stop);
+        });
+        suggestions.appendChild(div);
+      });
+    }
+
+    function showResult(stop) {
+      // คำนวนเวลาประมาณรถจะมาถึงป้าย
+      const now = new Date();
+      const [h, m] = stop.scheduleStart.split(':').map(Number);
+      const startMin = h * 60 + m;
+      const currentMin = now.getHours() * 60 + now.getMinutes();
+      const diff = currentMin - startMin;
+      let etaMin = stop.timeToNext || 0;
+      let etaText = '';
+      if (diff < 0) {
+        etaText = "รถยังไม่เริ่มวิ่งในวันนี้";
+      } else {
+        const etaDate = new Date(now.getTime() + etaMin * 60000);
+        const hours = etaDate.getHours().toString().padStart(2, '0');
+        const minutes = etaDate.getMinutes().toString().padStart(2, '0');
+        etaText = `${etaMin} นาที เวลา ${hours}:${minutes} โดยประมาณ`;
+      }
+      resultArea.style.display = 'block';
+      resultArea.innerHTML = `
+        <h2>ป้าย: ${stop.stopName}</h2>
+        <p><strong>สายรถ:</strong> ${stop.routeName}</p>
+        <p><strong>เวลาคันถัดไป:</strong> ${etaText}</p>
+      `;
+    }
+
+    function goToMap() {
+      window.location.href = 'map.html';
+    }
+  </script>
+</body>
+</html>

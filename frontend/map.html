@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <title>แผนที่รถมินิบัส ม.วลัยลักษณ์</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  />
+  <style>
+    body {
+      font-family: 'Noto Sans Thai', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f5f7fa;
+      margin: 0;
+      padding: 30px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+    h2 {
+      color: #1a73e8;
+      font-weight: 700;
+      margin-bottom: 20px;
+      font-size: 2rem;
+      text-align: center;
+    }
+    .controls {
+      width: 900px;
+      max-width: 100%;
+      display: flex;
+      gap: 20px;
+      justify-content: center;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    label {
+      font-weight: 600;
+      font-size: 1.1rem;
+      color: #333;
+      align-self: center;
+    }
+    select {
+      padding: 10px 15px;
+      font-size: 1.1rem;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+      box-shadow: 0 1px 5px rgba(0,0,0,0.1);
+      min-width: 220px;
+      transition: border-color 0.3s ease;
+    }
+    select:hover, select:focus {
+      border-color: #1a73e8;
+      outline: none;
+      box-shadow: 0 0 10px #aecbfa;
+    }
+    #map {
+      width: 900px;
+      max-width: 100%;
+      height: 600px;
+      border-radius: 15px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+      overflow: hidden;
+    }
+    .info {
+      width: 900px;
+      max-width: 100%;
+      background: white;
+      padding: 20px;
+      border-radius: 15px;
+      margin-top: 25px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+      font-size: 1.1rem;
+      color: #444;
+      line-height: 1.6;
+      font-weight: 500;
+      min-height: 90px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>เลือกสายรถและป้าย</h2>
+
+  <div class="controls">
+    <label for="routeSelect">สายรถ:</label>
+    <select id="routeSelect" aria-label="เลือกสายรถ"></select>
+
+    <label for="stopSelect">ป้าย:</label>
+    <select id="stopSelect" aria-label="เลือกป้าย"></select>
+  </div>
+
+  <div id="map"></div>
+
+  <div class="info" id="infoBox">กรุณาเลือกสายและป้ายเพื่อดูข้อมูลเวลารถและป้ายก่อน-หลัง</div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    // ข้อมูลสายรถและป้ายตามที่มีอยู่
+    const routes = [
+      {
+        route_id: "route1",
+        route_name: "สาย 1 - วิทยาเขตหลัก",
+        scheduleStart: "07:00",
+        intervalMin: 15,
+        stops: [
+          { id: 1, name: "หอพัก Residence", lat: 8.648039, lng: 99.888178, timeToNext: 3 },
+          { id: 2, name: "หอพักลักษณานิเวศ 18", lat: 8.648026, lng: 99.889342, timeToNext: 3 },
+          { id: 3, name: "หอพักลักษณานิเวศ 5", lat: 8.647565, lng: 99.892116, timeToNext: 3 },
+          { id: 4, name: "อาคารกิจกรรม", lat: 8.647447, lng: 99.893631, timeToNext: 3 },
+          { id: 5, name: "ศูนย์รวมรถ", lat: 8.646326, lng: 99.893985, timeToNext: 3 },
+          { id: 6, name: "อาคารสถาปัตยกรรม", lat: 8.644931, lng: 99.894366, timeToNext: 3 },
+          { id: 7, name: "อาคารเรียนรวม 3", lat: 8.644913, lng: 99.89542, timeToNext: 3 },
+          { id: 8, name: "อาคารไทยบุรี", lat: 8.64574, lng: 99.897491, timeToNext: 3 },
+          { id: 9, name: "อาคาร ST", lat: 8.644589, lng: 99.899819, timeToNext: 3 },
+          { id: 10, name: "อาคารบริหาร", lat: 8.641568, lng: 99.90186, timeToNext: 3 },
+          { id: 11, name: "โรงพยาบาลสัตว์ใหญ่", lat: 8.643369, lng: 99.913616, timeToNext: 3 },
+          { id: 12, name: "อาคารวิชาการ 5", lat: 8.638183, lng: 99.895565, timeToNext: 3 },
+          { id: 13, name: "ครัวโปรเชฟ", lat: 8.639222, lng: 99.894299, timeToNext: 4 },
+          { id: 14, name: "อาคารกายวิภาค", lat: 8.642834, lng: 99.893162, timeToNext: 3 },
+          { id: 15, name: "อาคารสถาปัตยกรรม (กลับ)", lat: 8.644931, lng: 99.894366, timeToNext: 3 },
+          { id: 16, name: "ศูนย์รวมรถ (กลับ)", lat: 8.646326, lng: 99.893985, timeToNext: 3 },
+          { id: 17, name: "อาคารกิจกรรม (กลับ)", lat: 8.647447, lng: 99.893631, timeToNext: 3 },
+          { id: 18, name: "หอพักลักษณานิเวศ 5 (กลับ)", lat: 8.647565, lng: 99.892116, timeToNext: 3 },
+          { id: 19, name: "หอพัก Residence (กลับ)", lat: 8.648039, lng: 99.888178, timeToNext: 0 }
+        ]
+      },
+      {
+        route_id: "route2",
+        route_name: "สาย 2 - หอพัก-สนามกีฬาตุมปัง",
+        scheduleStart: "07:05",
+        intervalMin: 10,
+        stops: [
+          { id: 1, name: "ป้ายตรงข้ามอาคารกิจกรรม", lat: 8.647437, lng: 99.893602, timeToNext: 3 },
+          { id: 2, name: "หอพักลักษณานิเวศ 5", lat: 8.647565, lng: 99.892116, timeToNext: 3 },
+          { id: 3, name: "หอพัก Residence", lat: 8.648039, lng: 99.888178, timeToNext: 4 },
+          { id: 4, name: "หอพักลักษณานิเวศ 18", lat: 8.648026, lng: 99.889342, timeToNext: 2 },
+          { id: 5, name: "ผ่านทางออกประตู 2", lat: 8.646997, lng: 99.890262, timeToNext: 3 },
+          { id: 6, name: "สนามแบดมินตัน", lat: 8.646997, lng: 99.890262, timeToNext: 3 },
+          { id: 7, name: "อาคารพลศึกษา", lat: 8.649192, lng: 99.881497, timeToNext: 2 },
+          { id: 8, name: "สระว่ายน้ำ", lat: 8.649192, lng: 99.881497, timeToNext: 2 },
+          { id: 9, name: "สนามเทนนิส", lat: 8.649412, lng: 99.880180, timeToNext: 2 },
+          { id: 10, name: "สนามกีฬาตุมปัง", lat: 8.649701, lng: 99.879673, timeToNext: 0 },
+          { id: 11, name: "สนามเทนนิส (กลับ)", lat: 8.649412, lng: 99.880180, timeToNext: 1 },
+          { id: 12, name: "สระว่ายน้ำ (กลับ)", lat: 8.649192, lng: 99.881497, timeToNext: 1 },
+          { id: 13, name: "อาคารพลศึกษา (กลับ)", lat: 8.649192, lng: 99.881497, timeToNext: 3 },
+          { id: 14, name: "สนามแบดมินตัน (กลับ)", lat: 8.646997, lng: 99.890262, timeToNext: 2 },
+          { id: 15, name: "ผ่านทางออกประตู 2 (กลับ)", lat: 8.646997, lng: 99.890262, timeToNext: 2 },
+          { id: 16, name: "หอพักลักษณานิเวศ 18 (กลับ)", lat: 8.648026, lng: 99.889342, timeToNext: 3 },
+          { id: 17, name: "หอพัก Residence (กลับ)", lat: 8.648039, lng: 99.888178, timeToNext: 2 },
+          { id: 18, name: "หอพักลักษณานิเวศ 5 (กลับ)", lat: 8.647565, lng: 99.892116, timeToNext: 2 },
+          { id: 19, name: "ป้ายตรงข้ามอาคารกิจกรรม (กลับ)", lat: 8.647437, lng: 99.893602, timeToNext: 0 }
+        ]
+      },
+      {
+        route_id: "route3",
+        route_name: "สาย 3 - หอพัก-หน้ามหาวิทยาลัย",
+        scheduleStart: "07:10",
+        intervalMin: 12,
+        stops: [
+          { id: 1, name: "แยกลักษณานิเวศ 14", lat: 8.648922, lng: 99.896568, timeToNext: 3 },
+          { id: 2, name: "อาคารกิจกรรม", lat: 8.647447, lng: 99.893631, timeToNext: 3 },
+          { id: 3, name: "ศูนย์รวมรถ", lat: 8.646326, lng: 99.893985, timeToNext: 2 },
+          { id: 4, name: "อาคารสถาปัตยกรรม", lat: 8.644931, lng: 99.894366, timeToNext: 3 },
+          { id: 5, name: "อาคารเรียนรวม 3", lat: 8.644913, lng: 99.89542, timeToNext: 3 },
+          { id: 6, name: "อาคารไทยบุรี", lat: 8.64574, lng: 99.897491, timeToNext: 2 },
+          { id: 7, name: "อาคาร ST", lat: 8.644589, lng: 99.899819, timeToNext: 3 },
+          { id: 8, name: "อาคารบริหาร", lat: 8.641568, lng: 99.90186, timeToNext: 3 },
+          { id: 9, name: "สวนวลัยลักษณ์ 1", lat: 8.647822, lng: 99.901608, timeToNext: 2 },
+          { id: 10, name: "สวนวลัยลักษณ์ 2", lat: 8.649014, lng: 99.906032, timeToNext: 3 },
+          { id: 11, name: "7-Eleven คุ้มสวัสดิ์", lat: 8.651574, lng: 99.917913, timeToNext: 3 },
+          { id: 12, name: "โลตัสท่าศาลา", lat: 8.662143, lng: 99.92368, timeToNext: 3 },
+          { id: 13, name: "ศาลารอรถทางเข้ามหาวิทยาลัย", lat: 8.660496, lng: 99.923339, timeToNext: 3 },
+          { id: 14, name: "7-Eleven (ขาเข้า)", lat: 8.654814, lng: 99.920638, timeToNext: 3 },
+          { id: 15, name: "ศูนย์การแพทย์ มวล", lat: 8.6418, lng: 99.913428, timeToNext: 3 },
+          { id: 16, name: "อาคาร ดร.วิจิตร ศรีสะอ้าน", lat: 8.644173, lng: 99.900353, timeToNext: 3 }
+        ]
+      }
+    ];
+
+    const map = L.map('map').setView([8.645, 99.905], 15);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 20 }).addTo(map);
+
+    const routeSelect = document.getElementById('routeSelect');
+    const stopSelect = document.getElementById('stopSelect');
+    const infoBox = document.getElementById('infoBox');
+
+    let stopMarkers = [];
+    let busMarker = null;
+
+    // เติม dropdown รายชื่อสายรถ
+    function populateRoutes() {
+      routeSelect.innerHTML = '';
+      routes.forEach(route => {
+        const opt = document.createElement('option');
+        opt.value = route.route_id;
+        opt.textContent = route.route_name;
+        routeSelect.appendChild(opt);
+      });
+    }
+
+    // เติม dropdown ป้ายตามสายที่เลือก
+    function populateStops(routeId) {
+      stopSelect.innerHTML = '';
+      const route = routes.find(r => r.route_id === routeId);
+      if (!route) return;
+      route.stops.forEach(stop => {
+        const opt = document.createElement('option');
+        opt.value = stop.id;
+        opt.textContent = stop.name;
+        stopSelect.appendChild(opt);
+      });
+      if (route.stops.length > 0) stopSelect.value = route.stops[0].id;
+    }
+
+    // ลบ marker เดิมจากแผนที่
+    function clearMarkers() {
+      stopMarkers.forEach(m => map.removeLayer(m));
+      stopMarkers = [];
+      if (busMarker) {
+        map.removeLayer(busMarker);
+        busMarker = null;
+      }
+    }
+
+    // แสดง marker ป้ายทั้งหมดของสายที่เลือก
+    function showStopsOnMap(routeId) {
+      clearMarkers();
+      const route = routes.find(r => r.route_id === routeId);
+      if (!route) return;
+
+      route.stops.forEach(stop => {
+        const marker = L.marker([stop.lat, stop.lng]).addTo(map).bindPopup(stop.name);
+        stopMarkers.push(marker);
+      });
+
+      const bounds = route.stops.map(s => [s.lat, s.lng]);
+      if (bounds.length) map.fitBounds(bounds, { padding: [40, 40] });
+    }
+
+    // ซูมและแสดง popup ป้ายที่เลือก
+    stopSelect.addEventListener('change', () => {
+      const routeId = routeSelect.value;
+      const stopId = Number(stopSelect.value);
+      const route = routes.find(r => r.route_id === routeId);
+      if (!route) return;
+      const stop = route.stops.find(s => s.id === stopId);
+      if (!stop) return;
+
+      map.setView([stop.lat, stop.lng], 18);
+
+      const marker = stopMarkers.find(m => {
+        const latlng = m.getLatLng();
+        return latlng.lat === stop.lat && latlng.lng === stop.lng;
+      });
+      if (marker) marker.openPopup();
+
+      updateInfo(`
+        <strong>ป้ายที่เลือก:</strong> ${stop.name} <br/>
+        <strong>พิกัด:</strong> ${stop.lat}, ${stop.lng}
+      `);
+    });
+
+    // ฟังก์ชันแสดงตำแหน่งรถและเวลาถึงป้ายถัดไป
+    function simulateBusPosition(routeId) {
+      const route = routes.find(r => r.route_id === routeId);
+      if (!route) return;
+
+      const now = new Date();
+      const totalStops = route.stops.length;
+      const intervalSeconds = route.intervalMin * 60;
+      const startParts = route.scheduleStart.split(':');
+      const startMinutes = Number(startParts[0]) * 60 + Number(startParts[1]);
+      const currentMinutes = now.getHours() * 60 + now.getMinutes();
+      const minutesSinceStart = currentMinutes - startMinutes;
+
+      if (minutesSinceStart < 0) {
+        updateInfo('รถยังไม่เริ่มวิ่งในวันนี้');
+        return;
+      }
+
+      const totalSeconds = minutesSinceStart * 60;
+      const posIndex = Math.floor(totalSeconds / intervalSeconds) % totalStops;
+      const nextIndex = (posIndex + 1) % totalStops;
+
+      const stopNow = route.stops[posIndex];
+      const stopNext = route.stops[nextIndex];
+
+      if (busMarker) {
+        map.removeLayer(busMarker);
+      }
+      busMarker = L.circleMarker([stopNow.lat, stopNow.lng], {
+        radius: 10,
+        color: 'red',
+        fillColor: 'red',
+        fillOpacity: 0.7
+      }).addTo(map).bindPopup('รถอยู่ที่: ' + stopNow.name).openPopup();
+
+      const etaNextMin = stopNow.timeToNext || 0;
+      // คำนวณเวลาถึงป้าย
+      let arrivalTime = new Date(now.getTime() + etaNextMin * 60000);
+      let hours = arrivalTime.getHours().toString().padStart(2, '0');
+      let minutes = arrivalTime.getMinutes().toString().padStart(2, '0');
+      let etaText = `${etaNextMin} นาที เวลา ${hours}:${minutes} โดยประมาณ`;
+
+      updateInfo(`
+        <strong>รถสาย:</strong> ${route.route_name} <br/>
+        <strong>ตำแหน่งรถ:</strong> ${stopNow.name} <br/>
+        <strong>ป้ายถัดไป:</strong> ${stopNext.name} <br/>
+        <strong>เวลาถึงประมาณ:</strong> ${etaText} <br/>
+        <strong>ป้ายก่อนหน้า:</strong> ${route.stops[(posIndex - 1 + totalStops) % totalStops].name}
+      `);
+    }
+
+    function updateInfo(html) {
+      infoBox.innerHTML = html;
+    }
+
+    routeSelect.addEventListener('change', () => {
+      const routeId = routeSelect.value;
+      populateStops(routeId);
+      showStopsOnMap(routeId);
+      simulateBusPosition(routeId);
+    });
+
+    // โหลดข้อมูลและแสดงสายแรก
+    populateRoutes();
+    routeSelect.value = routes[0].route_id;
+    populateStops(routes[0].route_id);
+    showStopsOnMap(routes[0].route_id);
+    simulateBusPosition(routes[0].route_id);
+
+    // อัพเดตตำแหน่งรถทุก 30 วินาที
+    setInterval(() => {
+      simulateBusPosition(routeSelect.value);
+    }, 30000);
+  </script>
+</body>
+</html>
