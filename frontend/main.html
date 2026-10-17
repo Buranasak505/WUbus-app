@@ -11,8 +11,8 @@
       font-family: 'Poppins', sans-serif;
       margin: 0;
       min-height: 100vh;
-      background: #f8f9fa; /* แก้สีพื้นหลังเป็นโทนสว่างมินิมอล */
-      color: #333333; /* แก้สีตัวอักษรเป็นสีเข้ม */
+      background: #f8f9fa;
+      color: #333333;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -26,7 +26,7 @@
       position: fixed;
       top: 20px;
       right: 20px;
-      background: #333333; /* เปลี่ยนเป็นสีเข้มมินิมอล */
+      background: #333333;
       border: none;
       border-radius: 30px;
       padding: 12px 25px;
@@ -34,12 +34,12 @@
       font-size: 1rem;
       color: white;
       cursor: pointer;
-      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1); /* ปรับเงาให้อ่อนลง */
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
       z-index: 10;
       transition: background 0.3s ease;
     }
     #mapBtn:hover {
-      background: #555555; /* เปลี่ยนสีตอนชี้เมาส์ */
+      background: #555555;
     }
 
     h1 {
@@ -47,8 +47,8 @@
       font-size: 3rem;
       font-weight: 700;
       text-align: center;
-      color: #222222; /* เปลี่ยนสีหัวข้อเป็นสีดำเข้ม */
-      text-shadow: 0 2px 4px rgba(0,0,0,0.05); /* ปรับเงาหัวข้อให้อ่อนลง */
+      color: #222222;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.05);
     }
 
     /* Search box container */
@@ -59,7 +59,7 @@
       max-width: 600px;
       display: flex;
       align-items: center;
-      box-shadow: 0 6px 15px rgba(0,0,0,0.05); /* ปรับเงากล่องค้นหา */
+      box-shadow: 0 6px 15px rgba(0,0,0,0.05);
       width: 100%;
       max-width: 600px;
     }
@@ -78,7 +78,7 @@
       font-style: italic;
     }
     button.search-btn {
-      background: #333333; /* เปลี่ยนเป็นสีเข้มมินิมอล */
+      background: #333333;
       border: none;
       padding: 12px 25px;
       margin-left: 15px;
@@ -87,31 +87,33 @@
       font-weight: 700;
       cursor: pointer;
       font-size: 1.1rem;
-      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1); /* ปรับเงาให้อ่อนลง */
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
       transition: background 0.3s ease;
     }
     button.search-btn:hover {
-      background: #555555; /* เปลี่ยนสีตอนชี้เมาส์ */
+      background: #555555;
     }
 
     #suggestions {
       margin-top: 8px;
       border-radius: 0 0 12px 12px;
-      box-shadow: 0 10px 20px rgba(0,0,0,0.08); /* ปรับเงาให้อ่อนลง */
+      box-shadow: 0 10px 20px rgba(0,0,0,0.08);
       background: white;
       max-height: 220px;
       overflow-y: auto;
       color: #333;
       font-weight: 600;
+      width: 100%;
+      max-width: 600px;
     }
     #suggestions div {
       padding: 12px 20px;
       cursor: pointer;
-      border-bottom: 1px solid #eee; /* ปรับสีเส้นคั่นให้อ่อนลง */
+      border-bottom: 1px solid #eee;
     }
     #suggestions div:hover {
-      background-color: #f0f0f0; /* เปลี่ยนสีพื้นหลังตอนชี้เมาส์ให้เป็นสีเทาอ่อน */
-      color: #111111; /* เปลี่ยนสีตัวอักษรเป็นสีดำ */
+      background-color: #f0f0f0;
+      color: #111111;
     }
 
     .result {
@@ -120,14 +122,16 @@
       border-radius: 15px;
       padding: 25px;
       color: #333;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.05); /* ปรับเงาให้อ่อนลง */
+      box-shadow: 0 8px 20px rgba(0,0,0,0.05);
       font-size: 1.2rem;
       font-weight: 600;
+      width: 100%;
+      max-width: 550px;
     }
     .result h2 {
       font-size: 2rem;
       margin-top: 0;
-      color: #222222; /* เปลี่ยนสีหัวข้อผลลัพธ์เป็นสีดำ */
+      color: #222222;
       font-weight: 800;
     }
   </style>
@@ -154,6 +158,7 @@
         route_id: "route1",
         route_name: "สาย 1 - วิทยาเขตหลัก",
         scheduleStart: "07:00",
+        scheduleEnd: "20:30",
         intervalMin: 15,
         stops: [
           { id: 1, name: "หอพัก Residence", lat: 8.648039, lng: 99.888178, timeToNext: 3 },
@@ -180,7 +185,8 @@
       {
         route_id: "route2",
         route_name: "สาย 2 - หอพัก-สนามกีฬาตุมปัง",
-        scheduleStart: "07:05",
+        scheduleStart: "07:40",
+        scheduleEnd: "20:30",
         intervalMin: 10,
         stops: [
           { id: 1, name: "ป้ายตรงข้ามอาคารกิจกรรม", lat: 8.647437, lng: 99.893602, timeToNext: 3 },
@@ -207,7 +213,8 @@
       {
         route_id: "route3",
         route_name: "สาย 3 - หอพัก-หน้ามหาวิทยาลัย",
-        scheduleStart: "07:10",
+        scheduleStart: "07:00",
+        scheduleEnd: "20:10",
         intervalMin: 12,
         stops: [
           { id: 1, name: "แยกลักษณานิเวศ 14", lat: 8.648922, lng: 99.896568, timeToNext: 3 },
@@ -242,6 +249,7 @@
           stopName: stop.name.toLowerCase(),
           routeName: route.route_name,
           scheduleStart: route.scheduleStart,
+          scheduleEnd: route.scheduleEnd,
           intervalMin: route.intervalMin,
           timeToNext: stop.timeToNext
         });
@@ -251,6 +259,19 @@
     input.addEventListener('input', () => {
       showSuggestions(input.value);
     });
+
+    function searchStop() {
+      const val = input.value.trim().toLowerCase();
+      if (!val) return;
+      const stop = allStops.find(s => s.stopName === val);
+      if (stop) {
+        suggestions.innerHTML = '';
+        showResult(stop);
+      } else {
+        resultArea.style.display = 'block';
+        resultArea.innerHTML = `<p style="color: red; text-align: center;">ไม่พบป้ายที่ค้นหา</p>`;
+      }
+    }
 
     function showSuggestions(value) {
       const val = value.trim().toLowerCase();
@@ -270,25 +291,59 @@
     }
 
     function showResult(stop) {
-      // คำนวนเวลาประมาณรถจะมาถึงป้าย
       const now = new Date();
-      const [h, m] = stop.scheduleStart.split(':').map(Number);
-      const startMin = h * 60 + m;
-      const currentMin = now.getHours() * 60 + now.getMinutes();
-      const diff = currentMin - startMin;
-      let etaMin = stop.timeToNext || 0;
-      let etaText = '';
-      if (diff < 0) {
-        etaText = "รถยังไม่เริ่มวิ่งในวันนี้";
-      } else {
-        const etaDate = new Date(now.getTime() + etaMin * 60000);
-        const hours = etaDate.getHours().toString().padStart(2, '0');
-        const minutes = etaDate.getMinutes().toString().padStart(2, '0');
-        etaText = `${etaMin} นาที เวลา ${hours}:${minutes} โดยประมาณ`;
+      
+      const [hStart, mStart] = stop.scheduleStart.split(':').map(Number);
+      const startMin = (hStart * 60) + mStart;
+      
+      const [hEnd, mEnd] = stop.scheduleEnd.split(':').map(Number);
+      const endMin = (hEnd * 60) + mEnd;
+      
+      const currentMin = (now.getHours() * 60) + now.getMinutes();
+
+      // 1. หาว่าป้ายนี้ห่างจากจุดเริ่มต้นกี่นาที (เวลาเดินทางสะสมจากป้ายแรก)
+      let stopOffset = 0;
+      const route = routes.find(r => r.route_name === stop.routeName);
+      if (route) {
+        for (let i = 0; i < route.stops.length; i++) {
+          if (route.stops[i].name.toLowerCase() === stop.stopName) break;
+          stopOffset += route.stops[i].timeToNext;
+        }
       }
+
+      // 2. คำนวณเวลาที่รถคันแรกและคันสุดท้ายของวันจะมาถึงป้ายนี้
+      const firstArrivalTime = startMin + stopOffset;
+      const lastArrivalTime = endMin + stopOffset;
+
+      let etaText = '';
+      
+      // 3. ตรวจสอบเงื่อนไขเวลา
+      if (currentMin > lastArrivalTime) {
+          // เลยเวลาคันสุดท้ายไปแล้ว
+          etaText = '<span style="color: #e74c3c;">ขณะนี้ไม่มีรถให้บริการ (หมดระยะเวลา)</span>';
+      } else if (currentMin < firstArrivalTime) {
+          // ยังไม่ถึงเวลาคันแรกออก
+          const firstH = Math.floor(firstArrivalTime / 60).toString().padStart(2, '0');
+          const firstM = (firstArrivalTime % 60).toString().padStart(2, '0');
+          etaText = `รถยังไม่เริ่มวิ่ง (คันแรกถึงป้ายนี้เวลา ${firstH}:${firstM})`;
+      } else {
+          // รถอยู่ในช่วงให้บริการ คำนวณเวลารอคันถัดไป
+          const timeSinceFirst = currentMin - firstArrivalTime;
+          const timeToNextInterval = stop.intervalMin - (timeSinceFirst % stop.intervalMin);
+          const waitTime = (timeToNextInterval === stop.intervalMin) ? 0 : timeToNextInterval;
+          
+          const etaDate = new Date(now.getTime() + (waitTime * 60000));
+          const hours = etaDate.getHours().toString().padStart(2, '0');
+          const minutes = etaDate.getMinutes().toString().padStart(2, '0');
+          etaText = `${waitTime} นาที (เวลา ${hours}:${minutes} โดยประมาณ)`;
+      }
+
+      // ทำให้ชื่อป้ายแสดงผลตัวพิมพ์ใหญ่-เล็กตามปกติ
+      const originalStopName = route ? (route.stops.find(s => s.name.toLowerCase() === stop.stopName)?.name || stop.stopName) : stop.stopName;
+
       resultArea.style.display = 'block';
       resultArea.innerHTML = `
-        <h2>ป้าย: ${stop.stopName}</h2>
+        <h2>ป้าย: ${originalStopName}</h2>
         <p><strong>สายรถ:</strong> ${stop.routeName}</p>
         <p><strong>เวลาคันถัดไป:</strong> ${etaText}</p>
       `;
