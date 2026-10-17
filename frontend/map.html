@@ -98,12 +98,13 @@
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script>
-    // ข้อมูลสายรถและป้ายตามที่มีอยู่
+    // ข้อมูลสายรถและป้ายตามที่มีอยู่ พร้อมเวลาคันสุดท้าย
     const routes = [
       {
         route_id: "route1",
         route_name: "สาย 1 - วิทยาเขตหลัก",
         scheduleStart: "07:00",
+        scheduleEnd: "20:30",
         intervalMin: 15,
         stops: [
           { id: 1, name: "หอพัก Residence", lat: 8.648039, lng: 99.888178, timeToNext: 3 },
@@ -130,7 +131,8 @@
       {
         route_id: "route2",
         route_name: "สาย 2 - หอพัก-สนามกีฬาตุมปัง",
-        scheduleStart: "07:05",
+        scheduleStart: "07:40",
+        scheduleEnd: "20:30",
         intervalMin: 10,
         stops: [
           { id: 1, name: "ป้ายตรงข้ามอาคารกิจกรรม", lat: 8.647437, lng: 99.893602, timeToNext: 3 },
@@ -157,7 +159,8 @@
       {
         route_id: "route3",
         route_name: "สาย 3 - หอพัก-หน้ามหาวิทยาลัย",
-        scheduleStart: "07:10",
+        scheduleStart: "07:00",
+        scheduleEnd: "20:10",
         intervalMin: 12,
         stops: [
           { id: 1, name: "แยกลักษณานิเวศ 14", lat: 8.648922, lng: 99.896568, timeToNext: 3 },
@@ -270,18 +273,40 @@
 
       const now = new Date();
       const totalStops = route.stops.length;
-      const intervalSeconds = route.intervalMin * 60;
+      
       const startParts = route.scheduleStart.split(':');
       const startMinutes = Number(startParts[0]) * 60 + Number(startParts[1]);
-      const currentMinutes = now.getHours() * 60 + now.getMinutes();
-      const minutesSinceStart = currentMinutes - startMinutes;
+      
+      const endParts = route.scheduleEnd.split(':');
+      const endMinutes = Number(endParts[0]) * 60 + Number(endParts[1]);
 
-      if (minutesSinceStart < 0) {
-        updateInfo('รถยังไม่เริ่มวิ่งในวันนี้');
+      const currentMinutes = now.getHours() * 60 + now.getMinutes();
+
+      // ถ้ารถเลยเวลาให้บริการไปแล้ว
+      if (currentMinutes > endMinutes) {
+        if (busMarker) {
+          map.removeLayer(busMarker);
+          busMarker = null;
+        }
+        updateInfo('<span style="color: #e74c3c; font-weight: bold; font-size: 1.2rem;">ขณะนี้ไม่มีรถให้บริการ (หมดระยะเวลา)</span>');
         return;
       }
 
+      // ถ้ารถยังไม่เริ่มวิ่งคันแรกของวัน
+      if (currentMinutes < startMinutes) {
+        if (busMarker) {
+          map.removeLayer(busMarker);
+          busMarker = null;
+        }
+        updateInfo(`รถยังไม่เริ่มวิ่ง (คันแรกออก ${route.scheduleStart})`);
+        return;
+      }
+
+      // ถ้ารถอยู่ในช่วงเวลาให้บริการ ให้จำลองตำแหน่ง
+      const minutesSinceStart = currentMinutes - startMinutes;
+      const intervalSeconds = route.intervalMin * 60;
       const totalSeconds = minutesSinceStart * 60;
+
       const posIndex = Math.floor(totalSeconds / intervalSeconds) % totalStops;
       const nextIndex = (posIndex + 1) % totalStops;
 
@@ -303,14 +328,16 @@
       let arrivalTime = new Date(now.getTime() + etaNextMin * 60000);
       let hours = arrivalTime.getHours().toString().padStart(2, '0');
       let minutes = arrivalTime.getMinutes().toString().padStart(2, '0');
-      let etaText = `${etaNextMin} นาที เวลา ${hours}:${minutes} โดยประมาณ`;
+      let etaText = `${etaNextMin} นาที (เวลา ${hours}:${minutes} โดยประมาณ)`;
+
+      let prevIndex = (posIndex - 1 + totalStops) % totalStops;
 
       updateInfo(`
         <strong>รถสาย:</strong> ${route.route_name} <br/>
         <strong>ตำแหน่งรถ:</strong> ${stopNow.name} <br/>
         <strong>ป้ายถัดไป:</strong> ${stopNext.name} <br/>
         <strong>เวลาถึงประมาณ:</strong> ${etaText} <br/>
-        <strong>ป้ายก่อนหน้า:</strong> ${route.stops[(posIndex - 1 + totalStops) % totalStops].name}
+        <strong>ป้ายก่อนหน้า:</strong> ${route.stops[prevIndex].name}
       `);
     }
 
